@@ -78,6 +78,22 @@
         .nav-link.active { background: #e0e7ff; color: var(--primary-dark); }
         .nav-link i { width: 20px; text-align: center; }
 
+        /* Designer Footer */
+        .designer-footer {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+        .designer-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .designer-footer a:hover { text-decoration: underline; }
+
         /* --- Main Content --- */
         .main { flex: 1; display: flex; flex-direction: column; position: relative; width: 100%; }
 
@@ -133,7 +149,7 @@
             box-shadow: var(--shadow-sm);
             margin-bottom: 2rem;
             border: 1px solid var(--border);
-            display: none; /* Hidden by default */
+            display: none;
             animation: slideDown 0.3s ease-out;
         }
         .settings-panel.active { display: block; }
@@ -190,6 +206,7 @@
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 1.5rem;
             margin-top: 2rem;
+            padding-bottom: 4rem; /* Extra space for scrolling */
         }
 
         .file-card {
@@ -240,6 +257,9 @@
                 justify-content: space-around;
             }
             .brand, .menu-label { display: none; }
+            /* Hide the footer link on mobile bottom-bar to keep it clean */
+            .designer-footer { display: none; }
+            
             .nav-link { flex-direction: column; gap: 4px; padding: 0.5rem; font-size: 0.7rem; margin: 0; }
             .nav-link i { font-size: 1.2rem; }
             
@@ -280,6 +300,10 @@
             <a href="#" class="nav-link active"><i class="fa-solid fa-file-pdf"></i> PDF to Image</a>
             <a href="#" class="nav-link"><i class="fa-solid fa-image"></i> Img to PDF</a>
             <a href="#" class="nav-link"><i class="fa-solid fa-compress"></i> Compress</a>
+        </div>
+
+        <div class="designer-footer">
+            Designed by <a href="https://www.linkedin.com/in/khizar226" target="_blank">Khizar Hayat</a>
         </div>
     </nav>
 
