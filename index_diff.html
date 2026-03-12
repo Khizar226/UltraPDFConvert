@@ -1,0 +1,1031 @@
+--- index.html (原始)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UltraConvert | Professional PDF Tools</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Professional Color Scheme: Deep Indigo & Slate */
+            --primary: #4338ca;       /* Indigo 700 */
+            --primary-dark: #3730a3;  /* Indigo 800 */
+            --accent: #6366f1;        /* Indigo 500 */
+            --bg-body: #f8fafc;       /* Slate 50 */
+            --bg-surface: #ffffff;
+            --text-main: #0f172a;     /* Slate 900 */
+            --text-sub: #64748b;      /* Slate 500 */
+            --border: #e2e8f0;        /* Slate 200 */
+            --success: #10b981;
+
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            z-index: 20;
+            transition: transform 0.3s ease;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        .menu-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-sub); margin-bottom: 0.75rem; font-weight: 700; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
+            text-decoration: none;
+            color: var(--text-sub);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover { background: #f1f5f9; color: var(--primary); }
+        .nav-link.active { background: #e0e7ff; color: var(--primary-dark); }
+        .nav-link i { width: 20px; text-align: center; }
+
+        /* Designer Footer */
+        .designer-footer {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+        .designer-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .designer-footer a:hover { text-decoration: underline; }
+
+        /* --- Main Content --- */
+        .main { flex: 1; display: flex; flex-direction: column; position: relative; width: 100%; }
+
+        .header {
+            height: var(--header-height);
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 { font-size: 1.25rem; font-weight: 700; }
+
+        .scroll-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        /* --- Upload Zone --- */
+        .upload-card {
+            background: var(--bg-surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 4rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-card:hover { border-color: var(--primary); background: #f8fafc; }
+
+        .upload-icon {
+            width: 64px; height: 64px;
+            background: #e0e7ff;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        /* --- Settings Panel --- */
+        .settings-panel {
+            background: var(--bg-surface);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        .settings-panel.active { display: block; }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .control-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.5rem; }
+
+        .select-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-body);
+            font-size: 0.95rem;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        /* --- Action Bar --- */
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(67, 56, 202, 0.3); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        /* --- Results --- */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding-bottom: 4rem; /* Extra space for scrolling */
+        }
+
+        .file-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: 0.2s;
+        }
+        .file-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+        .preview-wrapper {
+            height: 180px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .preview-wrapper img { max-width: 100%; max-height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        .card-actions {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+        }
+
+        .badge {
+            background: #e0e7ff; color: var(--primary-dark);
+            padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+        }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                padding: 1rem;
+                order: 2; /* Move to bottom */
+                border-top: 1px solid var(--border);
+                border-right: none;
+                justify-content: space-around;
+            }
+            .brand, .menu-label { display: none; }
+            /* Hide the footer link on mobile bottom-bar to keep it clean */
+            .designer-footer { display: none; }
+
+            .nav-link { flex-direction: column; gap: 4px; padding: 0.5rem; font-size: 0.7rem; margin: 0; }
+            .nav-link i { font-size: 1.2rem; }
+
+            .header { padding: 0 1rem; height: 60px; }
+            .main { height: calc(100vh - 70px); order: 1; }
+            .scroll-area { padding: 1rem; }
+            .upload-card { padding: 2rem 1rem; }
+            .action-bar { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+        }
+
+        /* Loader */
+        .loader-modal {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(5px); z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: none;
+        }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 5px solid #e0e7ff;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand"><i class="fa-solid fa-shapes"></i> UltraConvert</div>
+
+        <div>
+            <div class="menu-label">Workspace</div>
+            <a href="#" class="nav-link active"><i class="fa-solid fa-file-pdf"></i> PDF to Image</a>
+            <a href="#" class="nav-link"><i class="fa-solid fa-image"></i> Img to PDF</a>
+            <a href="#" class="nav-link"><i class="fa-solid fa-compress"></i> Compress</a>
+        </div>
+
+        <div class="designer-footer">
+            Designed by <a href="https://www.linkedin.com/in/khizar226" target="_blank">Khizar Hayat</a>
+        </div>
+    </nav>
+
+    <main class="main">
+        <header class="header">
+            <h1>PDF Studio</h1>
+            <div style="font-size: 0.9rem; color: var(--text-sub);">v2.0 Mobile Ready</div>
+        </header>
+
+        <div class="scroll-area">
+
+            <div class="upload-card" id="dropZone">
+                <input type="file" id="fileInput" accept="application/pdf" hidden>
+                <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h3 style="margin-bottom: 0.5rem; color: var(--text-main);">Upload PDF Document</h3>
+                <p style="color: var(--text-sub); margin-bottom: 1.5rem;">Drag & drop or tap to browse</p>
+                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Select File</button>
+            </div>
+
+            <div class="settings-panel" id="settingsPanel">
+                <div class="options-grid">
+
+                    <div class="control-group">
+                        <label>Output Format</label>
+                        <select id="formatSelect" class="select-input">
+                            <option value="png">PNG (Best Quality)</option>
+                            <option value="jpeg">JPG (Small Size)</option>
+                            <option value="webp">WebP (Modern Web)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Resolution (DPI)</label>
+                        <select id="dpiSelect" class="select-input">
+                            <option value="1">72 DPI (Screen / Fast)</option>
+                            <option value="2.08">150 DPI (Standard)</option>
+                            <option value="4.16">300 DPI (High Print)</option>
+                            <option value="8.33">600 DPI (Ultra HD)</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="convertBtn">
+                        <i class="fa-solid fa-bolt"></i> Start Conversion
+                    </button>
+                    <button class="btn btn-success" id="downloadZipBtn" disabled>
+                        <i class="fa-solid fa-box-archive"></i> Download ZIP
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-grid" id="resultsGrid"></div>
+
+        </div>
+    </main>
+
+    <div class="loader-modal" id="loader">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; font-weight: 600; color: var(--primary);">Processing...</p>
+        <p id="progressText" style="font-size: 0.85rem; color: var(--text-sub);">Initializing</p>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const state = {
+            pdfDoc: null,
+            file: null,
+            results: []
+        };
+
+        const els = {
+            dropZone: document.getElementById('dropZone'),
+            fileInput: document.getElementById('fileInput'),
+            settingsPanel: document.getElementById('settingsPanel'),
+            resultsGrid: document.getElementById('resultsGrid'),
+            convertBtn: document.getElementById('convertBtn'),
+            downloadZipBtn: document.getElementById('downloadZipBtn'),
+            formatSelect: document.getElementById('formatSelect'),
+            dpiSelect: document.getElementById('dpiSelect'),
+            loader: document.getElementById('loader'),
+            progressText: document.getElementById('progressText')
+        };
+
+        // --- Event Listeners ---
+        els.fileInput.addEventListener('change', (e) => loadFile(e.target.files[0]));
+
+        els.dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            els.dropZone.style.borderColor = 'var(--primary)';
+            els.dropZone.style.background = '#e0e7ff';
+        });
+
+        els.dropZone.addEventListener('dragleave', (e) => {
+            els.dropZone.style.borderColor = 'var(--border)';
+            els.dropZone.style.background = 'var(--bg-surface)';
+        });
+
+        els.dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            els.dropZone.style.borderColor = 'var(--border)';
+            els.dropZone.style.background = 'var(--bg-surface)';
+            if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+        });
+
+        els.convertBtn.addEventListener('click', processPDF);
+        els.downloadZipBtn.addEventListener('click', downloadAll);
+
+        // --- Core Functions ---
+
+        function loadFile(file) {
+            if (file && file.type === 'application/pdf') {
+                state.file = file;
+                els.settingsPanel.classList.add('active');
+                els.resultsGrid.innerHTML = '';
+                els.downloadZipBtn.disabled = true;
+
+                // Update UI to show filename
+                els.dropZone.innerHTML = `
+                    <div class="upload-icon" style="background:#d1fae5; color:#059669;">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3>${file.name}</h3>
+                    <p style="color:var(--text-sub);">Ready to configure settings</p>
+                `;
+            } else {
+                alert('Please upload a valid PDF.');
+            }
+        }
+
+        async function processPDF() {
+            els.loader.style.display = 'flex';
+            state.results = [];
+            els.resultsGrid.innerHTML = '';
+
+            try {
+                const arrayBuffer = await state.file.arrayBuffer();
+                state.pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
+
+                const totalPages = state.pdfDoc.numPages;
+                const scale = parseFloat(els.dpiSelect.value);
+                const format = els.formatSelect.value;
+
+                // Process pages sequentially to avoid memory crash
+                for (let i = 1; i <= totalPages; i++) {
+                    els.progressText.innerText = `Converting page ${i} of ${totalPages}...`;
+                    await convertPage(i, scale, format);
+                }
+
+                els.downloadZipBtn.disabled = false;
+                els.loader.style.display = 'none';
+
+            } catch (err) {
+                console.error(err);
+                alert('Error during conversion. Try a lower DPI setting.');
+                els.loader.style.display = 'none';
+            }
+        }
+
+        async function convertPage(pageNum, scale, format) {
+            const page = await state.pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: scale });
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            let mime = 'image/png';
+            if(format === 'jpeg') mime = 'image/jpeg';
+            if(format === 'webp') mime = 'image/webp';
+
+            // High quality compression
+            const dataUrl = canvas.toDataURL(mime, 0.92);
+            const blob = dataURLtoBlob(dataUrl);
+
+            state.results.push({ page: pageNum, blob: blob, ext: format === 'jpeg' ? 'jpg' : format });
+
+            // Create UI Card
+            const card = document.createElement('div');
+            card.className = 'file-card';
+            card.innerHTML = `
+                <div class="preview-wrapper">
+                    <img src="${dataUrl}" alt="Page ${pageNum}">
+                </div>
+                <div class="card-actions">
+                    <span class="badge">Page ${pageNum}</span>
+                    <button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"
+                        onclick="saveAs(state.results[${pageNum-1}].blob, 'page_${pageNum}.${format === 'jpeg' ? 'jpg' : format}')">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                </div>
+            `;
+            els.resultsGrid.appendChild(card);
+        }
+
+        async function downloadAll() {
+            const zip = new JSZip();
+            const folder = zip.folder("converted_files");
+
+            state.results.forEach(item => {
+                folder.file(`page_${item.page}.${item.ext}`, item.blob);
+            });
+
+            const content = await zip.generateAsync({type:"blob"});
+            saveAs(content, "converted_images.zip");
+        }
+
+        function dataURLtoBlob(dataurl) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){ u8arr[n] = bstr.charCodeAt(n); }
+            return new Blob([u8arr], {type:mime});
+        }
+    </script>
+</body>
+</html>
+
++++ index.html (修改后)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UltraConvert Pro | Complete PDF Suite</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4338ca;
+            --primary-dark: #3730a3;
+            --primary-light: #6366f1;
+            --accent: #8b5cf6;
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(67, 56, 202, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
+        }
+
+        /* Header */
+        .header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .header-nav a {
+            color: var(--text-sub);
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-nav a:hover { color: var(--primary-light); }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff, var(--text-sub));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        /* Tools Grid */
+        .tools-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-xl);
+            background: var(--bg-card-hover);
+        }
+
+        .tool-card:hover::before { opacity: 1; }
+
+        .tool-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+            color: white;
+        }
+
+        .tool-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .tool-card p {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .tool-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(67, 56, 202, 0.2);
+            color: var(--primary-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Features Section */
+        .features {
+            max-width: 1400px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .feature-item i {
+            font-size: 2.5rem;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+        }
+
+        .feature-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-item p {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--text-sub);
+        }
+
+        .footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .tools-grid { grid-template-columns: 1fr; }
+            .header-nav { display: none; }
+            .header-content { flex-direction: column; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="brand">
+                <i class="fa-solid fa-shapes"></i>
+                UltraConvert Pro
+            </div>
+            <nav class="header-nav">
+                <a href="#tools"><i class="fa-solid fa-grid-2"></i> Tools</a>
+                <a href="#features"><i class="fa-solid fa-star"></i> Features</a>
+                <a href="https://www.linkedin.com/in/khizar226" target="_blank"><i class="fa-brands fa-linkedin"></i> Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Complete PDF Solution</h1>
+        <p>All-in-one professional PDF toolkit with advanced features. Convert, merge, split, compress, edit, and protect your documents with enterprise-grade security.</p>
+    </section>
+
+    <section class="tools-section" id="tools">
+        <h2 class="section-title"><i class="fa-solid fa-toolbox"></i> PDF Tools</h2>
+        <div class="tools-grid">
+            <!-- PDF to Image -->
+            <a href="pdf-to-image.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-image"></i></div>
+                <h3>PDF to Image</h3>
+                <p>Convert PDF pages to high-quality PNG, JPG, or WebP images with customizable DPI settings.</p>
+                <div class="tool-tags">
+                    <span class="tag">PNG</span>
+                    <span class="tag">JPG</span>
+                    <span class="tag">WebP</span>
+                </div>
+            </a>
+
+            <!-- Image to PDF -->
+            <a href="image-to-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-file-image"></i></div>
+                <h3>Image to PDF</h3>
+                <p>Combine multiple images into a single PDF document with layout and quality options.</p>
+                <div class="tool-tags">
+                    <span class="tag">JPG</span>
+                    <span class="tag">PNG</span>
+                    <span class="tag">Batch</span>
+                </div>
+            </a>
+
+            <!-- Merge PDF -->
+            <a href="merge-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-object-group"></i></div>
+                <h3>Merge PDF</h3>
+                <p>Combine multiple PDF files into one document. Reorder pages and manage file sequences.</p>
+                <div class="tool-tags">
+                    <span class="tag">Combine</span>
+                    <span class="tag">Multi-file</span>
+                </div>
+            </a>
+
+            <!-- Split PDF -->
+            <a href="split-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-scissors"></i></div>
+                <h3>Split PDF</h3>
+                <p>Extract specific pages or split PDF into separate documents by page ranges.</p>
+                <div class="tool-tags">
+                    <span class="tag">Extract</span>
+                    <span class="tag">Pages</span>
+                </div>
+            </a>
+
+            <!-- Compress PDF -->
+            <a href="compress-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-compress"></i></div>
+                <h3>Compress PDF</h3>
+                <p>Reduce PDF file size while maintaining optimal quality for web or print.</p>
+                <div class="tool-tags">
+                    <span class="tag">Optimize</span>
+                    <span class="tag">Size</span>
+                </div>
+            </a>
+
+            <!-- PDF to Word -->
+            <a href="pdf-to-word.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-file-word"></i></div>
+                <h3>PDF to Word</h3>
+                <p>Convert PDF documents to editable Word format while preserving formatting.</p>
+                <div class="tool-tags">
+                    <span class="tag">DOCX</span>
+                    <span class="tag">Editable</span>
+                </div>
+            </a>
+
+            <!-- PDF to Excel -->
+            <a href="pdf-to-excel.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-file-excel"></i></div>
+                <h3>PDF to Excel</h3>
+                <p>Extract tables from PDF to spreadsheet format with accurate data preservation.</p>
+                <div class="tool-tags">
+                    <span class="tag">XLSX</span>
+                    <span class="tag">Tables</span>
+                </div>
+            </a>
+
+            <!-- PDF to PowerPoint -->
+            <a href="pdf-to-ppt.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-file-powerpoint"></i></div>
+                <h3>PDF to PowerPoint</h3>
+                <p>Transform PDF presentations into editable PowerPoint slides.</p>
+                <div class="tool-tags">
+                    <span class="tag">PPTX</span>
+                    <span class="tag">Slides</span>
+                </div>
+            </a>
+
+            <!-- Rotate PDF -->
+            <a href="rotate-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-rotate"></i></div>
+                <h3>Rotate PDF</h3>
+                <p>Rotate PDF pages clockwise or counter-clockwise to correct orientation.</p>
+                <div class="tool-tags">
+                    <span class="tag">90°</span>
+                    <span class="tag">180°</span>
+                </div>
+            </a>
+
+            <!-- Add Watermark -->
+            <a href="watermark-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-stamp"></i></div>
+                <h3>Add Watermark</h3>
+                <p>Add text or image watermarks to protect your PDF documents.</p>
+                <div class="tool-tags">
+                    <span class="tag">Text</span>
+                    <span class="tag">Image</span>
+                </div>
+            </a>
+
+            <!-- Protect PDF -->
+            <a href="protect-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-lock"></i></div>
+                <h3>Protect PDF</h3>
+                <p>Add password encryption to secure your sensitive PDF documents.</p>
+                <div class="tool-tags">
+                    <span class="tag">Password</span>
+                    <span class="tag">Encrypt</span>
+                </div>
+            </a>
+
+            <!-- Unlock PDF -->
+            <a href="unlock-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-unlock"></i></div>
+                <h3>Unlock PDF</h3>
+                <p>Remove password protection from PDF files you have access to.</p>
+                <div class="tool-tags">
+                    <span class="tag">Decrypt</span>
+                    <span class="tag">Security</span>
+                </div>
+            </a>
+
+            <!-- PDF Editor -->
+            <a href="edit-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+                <h3>Edit PDF</h3>
+                <p>Add text, images, shapes, and annotations to your PDF documents.</p>
+                <div class="tool-tags">
+                    <span class="tag">Annotate</span>
+                    <span class="tag">Draw</span>
+                </div>
+            </a>
+
+            <!-- Sign PDF -->
+            <a href="sign-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-signature"></i></div>
+                <h3>Sign PDF</h3>
+                <p>Add digital signatures to PDF documents for authentication.</p>
+                <div class="tool-tags">
+                    <span class="tag">E-Sign</span>
+                    <span class="tag">Digital</span>
+                </div>
+            </a>
+
+            <!-- OCR PDF -->
+            <a href="ocr-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-eye"></i></div>
+                <h3>OCR PDF</h3>
+                <p>Extract text from scanned documents using optical character recognition.</p>
+                <div class="tool-tags">
+                    <span class="tag">Scan</span>
+                    <span class="tag">Text</span>
+                </div>
+            </a>
+
+            <!-- Repair PDF -->
+            <a href="repair-pdf.html" class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                <h3>Repair PDF</h3>
+                <p>Fix corrupted or damaged PDF files to recover your data.</p>
+                <div class="tool-tags">
+                    <span class="tag">Fix</span>
+                    <span class="tag">Recover</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <h2 class="section-title"><i class="fa-solid fa-gem"></i> Why Choose UltraConvert Pro?</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <i class="fa-solid fa-bolt"></i>
+                <h4>Lightning Fast</h4>
+                <p>Process documents instantly in your browser without server uploads</p>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h4>100% Secure</h4>
+                <p>All processing happens locally - your files never leave your device</p>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-infinity"></i>
+                <h4>Unlimited Use</h4>
+                <p>No file limits, no subscriptions, completely free forever</p>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <h4>Mobile Ready</h4>
+                <p>Fully responsive design works on all devices and screen sizes</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>Designed with <i class="fa-solid fa-heart" style="color: var(--danger);"></i> by <a href="https://www.linkedin.com/in/khizar226" target="_blank">Khizar Hayat</a></p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem;">&copy; 2024 UltraConvert Pro. All rights reserved.</p>
+    </footer>
+</body>
+</html>
